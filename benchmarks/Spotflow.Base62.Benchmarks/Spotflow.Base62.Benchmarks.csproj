@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Base62" />
+    <PackageReference Include="BenchmarkDotNet" />
+    <PackageReference Include="SimpleBase" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../src/Spotflow.Base62/Spotflow.Base62.csproj" />
+  </ItemGroup>
+</Project>

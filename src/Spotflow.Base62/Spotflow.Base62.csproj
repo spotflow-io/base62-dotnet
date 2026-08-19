@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Spotflow.Base62</PackageId>
+    <Title>Spotflow Base62.NET</Title>
+    <Description>A fast, dependency-free Base62 encoder and decoder for .NET.</Description>
+    <Authors>Spotflow</Authors>
+    <Copyright>Copyright (c) 2026 Spotflow</Copyright>
+    <PackageTags>Base62;Encoding;Binary;Text;Spotflow</PackageTags>
+    <PackageIcon>PackageIcon.png</PackageIcon>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageProjectUrl>https://github.com/spotflow-io/base62-dotnet</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/spotflow-io/base62-dotnet.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <IsAotCompatible>true</IsAotCompatible>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="../../PackageIcon.png" Pack="true" PackagePath="" />
+    <None Include="../../README.nuget.md" Pack="true" PackagePath="README.md" />
+  </ItemGroup>
+</Project>
