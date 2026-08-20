@@ -17,14 +17,14 @@ public static class Base62
 {
     internal const string Base62Alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
-    private const byte UnmappedCharacterSentinel = byte.MaxValue;
-    private const int BitsPerByte = 8;
-    private const int EncodedBlockCharCount = 11;
-    private const int DecodedBlockByteCount = 8;
+    private const byte _unmappedCharacterSentinel = byte.MaxValue;
+    private const int _bitsPerByte = 8;
+    private const int _encodedBlockCharCount = 11;
+    private const int _decodedBlockByteCount = 8;
 #if NET8_0
-    private const int StackAllocatedCharThreshold = 1024;
+    private const int _stackAllocatedCharThreshold = 1024;
 #endif
-    private static readonly byte[] Base62DecodingTable = CreateDecodingTable();
+    private static readonly byte[] _base62DecodingTable = CreateDecodingTable();
 
     /// <summary>
     /// Gets the exact encoded length for binary data of the specified length.
@@ -57,14 +57,14 @@ public static class Base62
     {
         ArgumentOutOfRangeException.ThrowIfNegative(encodedLength);
 
-        var (fullBlockCount, trailingCharCount) = Math.DivRem(encodedLength, EncodedBlockCharCount);
+        var (fullBlockCount, trailingCharCount) = Math.DivRem(encodedLength, _encodedBlockCharCount);
 
         if (!TryGetTrailingDecodedLength(trailingCharCount, out var trailingByteCount))
         {
             throw new FormatException("The encoded data has an invalid final block length.");
         }
 
-        return fullBlockCount * DecodedBlockByteCount + trailingByteCount;
+        return (fullBlockCount * _decodedBlockByteCount) + trailingByteCount;
     }
 
     /// <summary>
@@ -83,7 +83,7 @@ public static class Base62
 #if NET9_0_OR_GREATER
         return string.Create(encodedLength, source, static (destination, state) => EncodeToChars(state, destination));
 #else
-        if (encodedLength <= StackAllocatedCharThreshold)
+        if (encodedLength <= _stackAllocatedCharThreshold)
         {
             Span<char> encoded = stackalloc char[encodedLength];
             EncodeToChars(source, encoded);
@@ -470,17 +470,17 @@ public static class Base62
         bytesConsumed = 0;
         symbolsWritten = 0;
 
-        while (source.Length - bytesConsumed >= DecodedBlockByteCount)
+        while (source.Length - bytesConsumed >= _decodedBlockByteCount)
         {
-            if (destination.Length - symbolsWritten < EncodedBlockCharCount)
+            if (destination.Length - symbolsWritten < _encodedBlockCharCount)
             {
                 return OperationStatus.DestinationTooSmall;
             }
 
-            var block = BinaryPrimitives.ReadUInt64LittleEndian(source.Slice(bytesConsumed, DecodedBlockByteCount));
-            EncodeBlock<TSymbol, TCodec>(block, destination.Slice(symbolsWritten, EncodedBlockCharCount));
-            bytesConsumed += DecodedBlockByteCount;
-            symbolsWritten += EncodedBlockCharCount;
+            var block = BinaryPrimitives.ReadUInt64LittleEndian(source.Slice(bytesConsumed, _decodedBlockByteCount));
+            EncodeBlock<TSymbol, TCodec>(block, destination.Slice(symbolsWritten, _encodedBlockCharCount));
+            bytesConsumed += _decodedBlockByteCount;
+            symbolsWritten += _encodedBlockCharCount;
         }
 
         var trailingByteCount = source.Length - bytesConsumed;
@@ -520,21 +520,21 @@ public static class Base62
         symbolsConsumed = 0;
         bytesWritten = 0;
 
-        while (source.Length - symbolsConsumed >= EncodedBlockCharCount)
+        while (source.Length - symbolsConsumed >= _encodedBlockCharCount)
         {
-            if (destination.Length - bytesWritten < DecodedBlockByteCount)
+            if (destination.Length - bytesWritten < _decodedBlockByteCount)
             {
                 return OperationStatus.DestinationTooSmall;
             }
 
-            if (!TryDecodeBlock<TSymbol, TCodec>(source.Slice(symbolsConsumed, EncodedBlockCharCount), out var block))
+            if (!TryDecodeBlock<TSymbol, TCodec>(source.Slice(symbolsConsumed, _encodedBlockCharCount), out var block))
             {
                 return OperationStatus.InvalidData;
             }
 
-            BinaryPrimitives.WriteUInt64LittleEndian(destination.Slice(bytesWritten, DecodedBlockByteCount), block);
-            symbolsConsumed += EncodedBlockCharCount;
-            bytesWritten += DecodedBlockByteCount;
+            BinaryPrimitives.WriteUInt64LittleEndian(destination.Slice(bytesWritten, _decodedBlockByteCount), block);
+            symbolsConsumed += _encodedBlockCharCount;
+            bytesWritten += _decodedBlockByteCount;
         }
 
         var trailingSymbolCount = source.Length - symbolsConsumed;
@@ -560,7 +560,7 @@ public static class Base62
         }
 
         if (!TryDecodeBlock<TSymbol, TCodec>(source.Slice(symbolsConsumed), out var trailingBlock)
-            || trailingBlock >= 1UL << (trailingByteCount * BitsPerByte))
+            || trailingBlock >= 1UL << (trailingByteCount * _bitsPerByte))
         {
             return OperationStatus.InvalidData;
         }
@@ -574,7 +574,7 @@ public static class Base62
     private static byte[] CreateDecodingTable()
     {
         var table = new byte[128];
-        Array.Fill(table, UnmappedCharacterSentinel);
+        Array.Fill(table, _unmappedCharacterSentinel);
 
         for (var digit = 0; digit < Base62Alphabet.Length; digit++)
         {
@@ -587,8 +587,8 @@ public static class Base62
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static bool TryGetEncodedLength(int sourceLength, out int encodedLength)
     {
-        var (fullBlockCount, trailingByteCount) = Math.DivRem(sourceLength, DecodedBlockByteCount);
-        var length = fullBlockCount * (long) EncodedBlockCharCount + GetTrailingEncodedLength(trailingByteCount);
+        var (fullBlockCount, trailingByteCount) = Math.DivRem(sourceLength, _decodedBlockByteCount);
+        var length = (fullBlockCount * (long) _encodedBlockCharCount) + GetTrailingEncodedLength(trailingByteCount);
         encodedLength = (int) Math.Min(length, int.MaxValue);
         return length <= int.MaxValue;
     }
@@ -665,7 +665,7 @@ public static class Base62
 
         for (var i = 0; i < source.Length; i++)
         {
-            block |= (ulong) source[i] << (i * BitsPerByte);
+            block |= (ulong) source[i] << (i * _bitsPerByte);
         }
 
         return block;
@@ -676,7 +676,7 @@ public static class Base62
     {
         for (var i = 0; i < destination.Length; i++)
         {
-            destination[i] = (byte) (block >> (i * BitsPerByte));
+            destination[i] = (byte) (block >> (i * _bitsPerByte));
         }
     }
 
@@ -705,12 +705,12 @@ public static class Base62
                 return false;
             }
 
-            if (i == 0 && source.Length == EncodedBlockCharCount && block > (ulong.MaxValue - digit) / 62)
+            if (i == 0 && source.Length == _encodedBlockCharCount && block > (ulong.MaxValue - digit) / 62)
             {
                 return false;
             }
 
-            block = block * 62 + digit;
+            block = (block * 62) + digit;
         }
 
         return true;
@@ -718,21 +718,21 @@ public static class Base62
 
     private static bool TryDecodeSymbol(int symbol, out byte digit)
     {
-        if ((uint) symbol >= (uint) Base62DecodingTable.Length)
+        if ((uint) symbol >= (uint) _base62DecodingTable.Length)
         {
-            digit = default;
+            digit = 0;
             return false;
         }
 
-        digit = Base62DecodingTable[symbol];
-        return digit != UnmappedCharacterSentinel;
+        digit = _base62DecodingTable[symbol];
+        return digit != _unmappedCharacterSentinel;
     }
 
     private interface ISymbolCodec<TSymbol>
     {
-        static abstract TSymbol Encode(byte digit);
+        public static abstract TSymbol Encode(byte digit);
 
-        static abstract bool TryDecode(TSymbol symbol, out byte digit);
+        public static abstract bool TryDecode(TSymbol symbol, out byte digit);
     }
 
     private readonly struct CharSymbolCodec : ISymbolCodec<char>

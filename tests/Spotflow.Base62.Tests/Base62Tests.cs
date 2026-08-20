@@ -242,7 +242,7 @@ public sealed class Base62Tests
     [DataRow("00000000000!0")]
     public void Character_Decoders_Should_Reject_Characters_Outside_The_Alphabet(string input)
     {
-        var output = new byte[(input.Length / 11 + 1) * 8];
+        var output = new byte[((input.Length / 11) + 1) * 8];
         var action = () => Base62.DecodeFromChars(input, output);
 
         action.Should().ThrowExactly<FormatException>();
@@ -593,7 +593,7 @@ public sealed class Base62Tests
     {
         var input = Enumerable.Range(1, 16).Select(value => (byte) value).ToArray();
         var encoded = Base62.EncodeToString(input);
-        var buffer = new byte[8 + encoded.Length * sizeof(char)];
+        var buffer = new byte[8 + (encoded.Length * sizeof(char))];
         var source = MemoryMarshal.Cast<byte, char>(buffer.AsSpan(8));
         encoded.AsSpan().CopyTo(source);
 
