@@ -145,7 +145,7 @@ Examples:
 | `Base62.GetDecodedLength` | The encoded length cannot represent valid data | `FormatException` |
 | Length methods | The supplied length is negative | `ArgumentOutOfRangeException` |
 
-The `Try` methods return `false` instead of throwing for malformed data or insufficient destination space. On failure, their written count reports the successfully processed prefix and the destination may be partially modified. The `OperationStatus` overloads distinguish `InvalidData`, `DestinationTooSmall`, and `NeedMoreData`.
+`Base62.TryGetDecodedLength` returns `false` for an encoded length that cannot represent valid data. The other `Try` methods return `false` instead of throwing for malformed data or insufficient destination space. On failure, their written count reports the successfully processed prefix and the destination may be partially modified. The `OperationStatus` overloads distinguish `InvalidData`, `DestinationTooSmall`, and `NeedMoreData`.
 
 ## Benchmarks
 

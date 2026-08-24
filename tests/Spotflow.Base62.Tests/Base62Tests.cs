@@ -54,6 +54,11 @@ public sealed class Base62Tests
         var inPlace = encodedUtf8.ToArray();
         Base62.DecodeFromUtf8InPlace(inPlace).Should().Be(input.Length);
         inPlace.AsSpan(0, input.Length).ToArray().Should().Equal(input);
+
+        var tryInPlace = encodedUtf8.ToArray();
+        Base62.TryDecodeFromUtf8InPlace(tryInPlace, out var inPlaceBytesWritten).Should().BeTrue();
+        inPlaceBytesWritten.Should().Be(input.Length);
+        tryInPlace.AsSpan(0, input.Length).ToArray().Should().Equal(input);
     }
 
     [TestMethod]
@@ -160,6 +165,8 @@ public sealed class Base62Tests
     public void GetDecodedLength_Should_Return_The_Exact_Length(int encodedLength, int expectedDecodedLength)
     {
         Base62.GetDecodedLength(encodedLength).Should().Be(expectedDecodedLength);
+        Base62.TryGetDecodedLength(encodedLength, out var decodedLength).Should().BeTrue();
+        decodedLength.Should().Be(expectedDecodedLength);
     }
 
     [TestMethod]
@@ -167,9 +174,11 @@ public sealed class Base62Tests
     {
         var encodeAction = () => Base62.GetEncodedLength(-1);
         var decodeAction = () => Base62.GetDecodedLength(-1);
+        var tryDecodeAction = () => Base62.TryGetDecodedLength(-1, out _);
 
         encodeAction.Should().ThrowExactly<ArgumentOutOfRangeException>().WithParameterName("sourceLength");
         decodeAction.Should().ThrowExactly<ArgumentOutOfRangeException>().WithParameterName("encodedLength");
+        tryDecodeAction.Should().ThrowExactly<ArgumentOutOfRangeException>().WithParameterName("encodedLength");
     }
 
     [TestMethod]
@@ -202,6 +211,8 @@ public sealed class Base62Tests
         var action = () => Base62.GetDecodedLength(encodedLength);
 
         action.Should().ThrowExactly<FormatException>();
+        Base62.TryGetDecodedLength(encodedLength, out var decodedLength).Should().BeFalse();
+        decodedLength.Should().Be(0);
     }
 
     [TestMethod]
@@ -506,11 +517,14 @@ public sealed class Base62Tests
     }
 
     [TestMethod]
-    public void InPlace_Decoder_Should_Throw_For_Invalid_Data()
+    public void InPlace_Decoders_Should_Reject_Invalid_Data()
     {
         var action = () => Base62.DecodeFromUtf8InPlace("0_"u8.ToArray());
+        var buffer = "0_"u8.ToArray();
 
         action.Should().ThrowExactly<FormatException>();
+        Base62.TryDecodeFromUtf8InPlace(buffer, out var bytesWritten).Should().BeFalse();
+        bytesWritten.Should().Be(0);
     }
 
     [TestMethod]

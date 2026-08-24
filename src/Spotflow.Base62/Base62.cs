@@ -55,16 +55,35 @@ public static class Base62
     /// <exception cref="FormatException"><paramref name="encodedLength"/> cannot represent data produced by this library.</exception>
     public static int GetDecodedLength(int encodedLength)
     {
+        if (!TryGetDecodedLength(encodedLength, out var decodedLength))
+        {
+            throw new FormatException("The encoded data has an invalid final block length.");
+        }
+
+        return decodedLength;
+    }
+
+    /// <summary>
+    /// Attempts to get the exact decoded length represented by a structurally valid encoded length.
+    /// </summary>
+    /// <param name="encodedLength">The number of Base62 characters or UTF-8 bytes.</param>
+    /// <param name="decodedLength">The decoded length in bytes, or zero if <paramref name="encodedLength"/> is structurally invalid.</param>
+    /// <returns><see langword="true"/> if <paramref name="encodedLength"/> can represent data produced by this library; otherwise, <see langword="false"/>.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="encodedLength"/> is negative.</exception>
+    public static bool TryGetDecodedLength(int encodedLength, out int decodedLength)
+    {
         ArgumentOutOfRangeException.ThrowIfNegative(encodedLength);
 
         var (fullBlockCount, trailingCharCount) = Math.DivRem(encodedLength, _encodedBlockCharCount);
 
         if (!TryGetTrailingDecodedLength(trailingCharCount, out var trailingByteCount))
         {
-            throw new FormatException("The encoded data has an invalid final block length.");
+            decodedLength = 0;
+            return false;
         }
 
-        return (fullBlockCount * _decodedBlockByteCount) + trailingByteCount;
+        decodedLength = (fullBlockCount * _decodedBlockByteCount) + trailingByteCount;
+        return true;
     }
 
     /// <summary>
@@ -458,6 +477,15 @@ public static class Base62
     /// <returns>The number of decoded bytes written to <paramref name="buffer"/>.</returns>
     /// <exception cref="FormatException"><paramref name="buffer"/> is not valid Base62 text produced by this library.</exception>
     public static int DecodeFromUtf8InPlace(Span<byte> buffer) => DecodeFromUtf8(buffer, buffer);
+
+    /// <summary>
+    /// Attempts to decode Base62 UTF-8 bytes in place. The decoded bytes are written to the beginning of <paramref name="buffer"/>.
+    /// </summary>
+    /// <param name="buffer">The buffer containing Base62 UTF-8 bytes.</param>
+    /// <param name="bytesWritten">The number of bytes written before the operation completed or failed.</param>
+    /// <returns><see langword="true"/> if decoding succeeded; otherwise, <see langword="false"/>.</returns>
+    public static bool TryDecodeFromUtf8InPlace(Span<byte> buffer, out int bytesWritten) =>
+        TryDecodeFromUtf8(buffer, buffer, out bytesWritten);
 
     private static OperationStatus EncodeCore<TSymbol, TCodec>(
         ReadOnlySpan<byte> source,
