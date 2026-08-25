@@ -1,0 +1,23 @@
+# Build output
+**/bin/
+**/obj/
+artifacts/
+nugets/
+BenchmarkDotNet.Artifacts/
+
+# Test output
+TestResults/
+coverage*.json
+coverage*.xml
+
+# IDE and user files
+.idea/
+.vs/
+*.suo
+*.user
+*.DotSettings.user
+
+# Packages and logs
+*.nupkg
+*.snupkg
+*.log

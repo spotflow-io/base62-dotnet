@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path=".gitignore" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+    <File Path="nuget.config" />
+  </Folder>
+  <Project Path="benchmarks/Spotflow.Base62.Benchmarks/Spotflow.Base62.Benchmarks.csproj" />
+  <Project Path="src/Spotflow.Base62/Spotflow.Base62.csproj" />
+  <Project Path="tests/Spotflow.Base62.Tests/Spotflow.Base62.Tests.csproj" />
+</Solution>
