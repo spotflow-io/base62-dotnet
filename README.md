@@ -19,7 +19,7 @@ An extremely fast, dependency-free Base62 encoder and decoder for .NET.
 
 Base62 is well suited for user-facing identifiers, links, and tokens:
 
-- **No special characters:** Base62 is entirely alphanumeric. It is naturally URL-safe. Double-clicking selects the entire string. Try it out: `Flop3FG78` vs `FPDL-FKL`.
+- **No special characters:** Base62 is entirely alphanumeric. It is naturally URL-safe. Double-clicking selects the entire string.
 - **Compact:** Base62 represents binary data much more efficiently than hexadecimal while remaining entirely alphanumeric. For example, eight bytes use 11 Base62 characters instead of 16 hexadecimal characters.
 
 
